@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   if (argc == 1) // Failsafe case if there aren't enough arguments
   {
     printf("Not enough arguments; please enter an array of numbers separated by a space.\n");
-    return 0;
+    return 1;
   }
 
   int size = argc - 1, // Size to avoid repetitive calculations
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
   radix_sort(arr, size);
 
-  printf("Result: ");
+  printf("\nResult: ");
   for (i = 0; i < size; i++) // Display sorted array
   {
     printf("%d ", arr[i]);
