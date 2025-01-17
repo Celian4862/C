@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 int _atoi(char *);
 void radix_sort(int *, int);
