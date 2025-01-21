@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // Include the string library for memcpy
 
 int _atoi(char *);
 void radix_sort(int *, int);
@@ -12,9 +13,9 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  int size = argc - 1, // Size to avoid repetitive calculations
-      arr[size],       // Integer array to store the numbers
-      i, j = 0;        // Iterators for loops
+  int size = argc - 1,                          // Size to avoid repetitive calculations
+      *arr = (int *)malloc(sizeof(int) * size), // Integer array to store the numbers
+      i, j = 0;                                 // Iterators for loops
 
   for (i = 1; i < size + 1; i++, j++)
   {
@@ -54,15 +55,15 @@ int _atoi(char *arr)
 
 void radix_sort(int *arr, int size)
 {
-  int g[size],           // Array to store the digits with 1 at the significant digit
-      l[size],           // Array to store the digits with 0 at the significant digit
-      i,                 // arr iterator
-      j,                 // Repetitions counter
-      ig = 0,            // Counter for array g
-      il = 0,            // counter for array l
-      largest = arr[0],  // Store the largest number in the array
-      power_largest = 0, // Counter for the repetition loop
-      sig_digit = 1;     // Determines the current focused significant digit in the binary number
+  int *g = (int *)malloc(sizeof(int) * size), // Array to store the digits with 1 at the significant digit
+      *l = (int *)malloc(sizeof(int) * size), // Array to store the digits with 0 at the significant digit
+      i,                                      // arr iterator
+      j,                                      // Repetitions counter
+      ig = 0,                                 // Counter for array g
+      il = 0,                                 // counter for array l
+      largest = arr[0],                       // Store the largest number in the array
+      power_largest = 0,                      // Counter for the repetition loop
+      sig_digit = 1;                          // Determines the current focused significant digit in the binary number
 
   for (i = 1; i < size; i++) // Find the largest number
   {
@@ -95,4 +96,9 @@ void radix_sort(int *arr, int size)
     sig_digit *= 2; // Move to the next significant digit in the binary number
     ig = il = 0;    // Reset recipient array counters to 0
   }
+
+  // Free the memory allocated for the arrays
+  free(arr);
+  free(g);
+  free(l);
 }
