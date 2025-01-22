@@ -3,7 +3,7 @@
 #include <string.h> // Include the string library for memcpy
 
 int _atoi(char *);
-void radix_sort(int *, int);
+int radix_sort(int *, int);
 
 int main(int argc, char **argv)
 {
@@ -22,7 +22,11 @@ int main(int argc, char **argv)
     arr[j] = _atoi(argv[i]); // Convert from string to integer
   }
 
-  radix_sort(arr, size);
+  if (!radix_sort(arr, size))
+  {
+    printf("Memory allocation failed.\n");
+    return 2;
+  }
 
   printf("\nResult: ");
   for (i = 0; i < size; i++) // Display sorted array
@@ -53,7 +57,7 @@ int _atoi(char *arr)
   return res;
 }
 
-void radix_sort(int *arr, int size)
+int radix_sort(int *arr, int size)
 {
   int *g = (int *)malloc(sizeof(int) * size), // Array to store the digits with 1 at the significant digit
       *l = (int *)malloc(sizeof(int) * size), // Array to store the digits with 0 at the significant digit
@@ -64,6 +68,12 @@ void radix_sort(int *arr, int size)
       largest = arr[0],                       // Store the largest number in the array
       power_largest = 0,                      // Counter for the repetition loop
       sig_digit = 1;                          // Determines the current focused significant digit in the binary number
+
+  if (NULL == g || NULL == l)
+  {
+    printf("Memory allocation failed.\n");
+    return 0;
+  }
 
   for (i = 1; i < size; i++) // Find the largest number
   {
@@ -101,4 +111,6 @@ void radix_sort(int *arr, int size)
   free(arr);
   free(g);
   free(l);
+
+  return 1;
 }
