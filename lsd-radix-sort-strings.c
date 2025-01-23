@@ -111,6 +111,13 @@ int main(int argc, char **argv)
       if (strs[word_i] == NULL)
       {
         printf("Memory allocation failed.\n");
+        // Free previously allocated memory
+        for (int j = 0; j < word_i; j++)
+        {
+          free(strs[j]);
+        }
+        free(strs);
+        free(buffer);
         return 4;
       }
 
@@ -137,6 +144,13 @@ int main(int argc, char **argv)
   if (radix_sort(strs, word_count))
   {
     printf("Memory allocation failed.\n");
+    // Free all dynamically allocated memory
+    free(buffer);
+    for (i = 0; i < word_count; i++)
+    {
+      free(strs[i]);
+    }
+    free(strs);
     return 2;
   }
 
@@ -165,6 +179,9 @@ int radix_sort(char **strs, int size)
 
   if (g == NULL || l == NULL)
   {
+    // Free previously allocated memory
+    free(g);
+    free(l);
     return 1; // Return value is 1 because it is used as a boolean, not a code
   }
 
@@ -189,6 +206,17 @@ int radix_sort(char **strs, int size)
         l[il] = (char *)realloc(l[il], sizeof(char) * (strlen(strs[j]) + 1));
         if (l[il] == NULL)
         {
+          // Free previously allocated memory
+          for (int m = 0; m < il; m++)
+          {
+            free(l[m]);
+          }
+          for (int m = 0; m < ig; m++)
+          {
+            free(g[m]);
+          }
+          free(l);
+          free(g);
           return 1; // Return value is 1 because it is used as a boolean, not a code
         }
         strcpy(l[il++], strs[j]);
@@ -198,6 +226,17 @@ int radix_sort(char **strs, int size)
         g[ig] = (char *)realloc(g[ig], sizeof(char) * (strlen(strs[j]) + 1));
         if (g[ig] == NULL)
         {
+          // Free previously allocated memory
+          for (int m = 0; m < il; m++)
+          {
+            free(l[m]);
+          }
+          for (int m = 0; m < ig; m++)
+          {
+            free(g[m]);
+          }
+          free(l);
+          free(g);
           return 1; // Return value is 1 because it is used as a boolean, not a code
         }
         strcpy(g[ig++], strs[j]);
