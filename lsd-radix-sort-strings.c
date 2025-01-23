@@ -21,6 +21,8 @@
 #include <string.h>
 #include <ctype.h>
 
+int radix_sort(char **, int);
+
 int main(int argc, char **argv)
 {
   if (argc == 1) // Failsafe case if there aren't enough arguments
@@ -130,8 +132,13 @@ int main(int argc, char **argv)
   {
     printf("%s ", strs[i]);
   }
+  printf("\n");
 
-  // LSD Radix Sort
+  if (!radix_sort(strs, word_count))
+  {
+    printf("Memory allocation failed.\n");
+    return 2;
+  }
 
   printf("\n\nSorted list of words:\n");
   for (i = 0; i < word_count; i++)
@@ -146,6 +153,58 @@ int main(int argc, char **argv)
     free(strs[i]);
   }
   free(strs);
+
+  return 0;
+}
+
+int radix_sort(char **strs, int size)
+{
+  char **g = (char **)malloc(sizeof(char *) * size), // Array of greater strings
+      **l = (char **)malloc(sizeof(char *) * size);  // Array of lesser strings
+
+  if (g == NULL || l == NULL)
+  {
+    return 1; // Return value is 1 because it is used as a boolean, not a code
+  }
+
+  int i,             // strs iterator
+      j,             // Repetitions counter
+      ig = 0,        // Counter for array g
+      il = 0,        // counter for array l
+      sig_digit = 1; // Current focused significant digit
+
+  for (i = 0; i < 7; i++)
+  {
+    for (j = 0; j < size; j++)
+    {
+      if ((strs[j][0] & sig_digit) == 0)
+      {
+        l[il] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
+        if (l[il] == NULL)
+        {
+          return 1; // Return value is 1 because it is used as a boolean, not a code
+        }
+        strcpy(l[il++], strs[j]);
+      }
+      else
+      {
+        g[ig] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
+        if (g[ig] == NULL)
+        {
+          return 1; // Return value is 1 because it is used as a boolean, not a code
+        }
+        strcpy(g[ig++], strs[j]);
+      }
+    }
+    memcpy(strs, l, il * sizeof(char *));      // Copy array of significant digit 0's to the main array
+    memcpy(strs + il, g, ig * sizeof(char *)); // Copy array of significant digit 1's to the main array after the significant digit 0's
+
+    sig_digit *= 2; // Move to the next significant digit in the binary number
+    ig = il = 0;    // Reset recipient array counters to 0
+  }
+
+  free(l);
+  free(g);
 
   return 0;
 }
