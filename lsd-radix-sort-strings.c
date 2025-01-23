@@ -134,17 +134,18 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  if (!radix_sort(strs, word_count))
+  if (radix_sort(strs, word_count))
   {
     printf("Memory allocation failed.\n");
     return 2;
   }
 
-  printf("\n\nSorted list of words:\n");
+  printf("\nSorted list of words:\n");
   for (i = 0; i < word_count; i++)
   {
     printf("%s ", strs[i]);
   }
+  printf("\n");
 
   // Free all dynamically allocated memory
   free(buffer);
@@ -169,9 +170,15 @@ int radix_sort(char **strs, int size)
 
   int i,             // strs iterator
       j,             // Repetitions counter
+      k,             // Iterator for returning data to the original array
       ig = 0,        // Counter for array g
       il = 0,        // counter for array l
       sig_digit = 1; // Current focused significant digit
+
+  for (i = 0; i < size; i++)
+  {
+    g[i] = l[i] = NULL;
+  }
 
   for (i = 0; i < 7; i++)
   {
@@ -179,7 +186,7 @@ int radix_sort(char **strs, int size)
     {
       if ((strs[j][0] & sig_digit) == 0)
       {
-        l[il] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
+        l[il] = (char *)realloc(l[il], sizeof(char) * (strlen(strs[j]) + 1));
         if (l[il] == NULL)
         {
           return 1; // Return value is 1 because it is used as a boolean, not a code
@@ -188,7 +195,7 @@ int radix_sort(char **strs, int size)
       }
       else
       {
-        g[ig] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
+        g[ig] = (char *)realloc(g[ig], sizeof(char) * (strlen(strs[j]) + 1));
         if (g[ig] == NULL)
         {
           return 1; // Return value is 1 because it is used as a boolean, not a code
@@ -196,13 +203,29 @@ int radix_sort(char **strs, int size)
         strcpy(g[ig++], strs[j]);
       }
     }
-    memcpy(strs, l, il * sizeof(char *));      // Copy array of significant digit 0's to the main array
-    memcpy(strs + il, g, ig * sizeof(char *)); // Copy array of significant digit 1's to the main array after the significant digit 0's
+
+    // Place all strings back into the original array
+    for (j = 0; j < il; j++)
+    {
+      strs[j] = (char *)realloc(strs[j], sizeof(char) * (strlen(l[j]) + 1));
+      strcpy(strs[j], l[j]);
+    }
+    k = j;
+    for (j = 0; j < ig; j++)
+    {
+      strs[k] = (char *)realloc(strs[k], sizeof(char) * (strlen(g[j]) + 1));
+      strcpy(strs[k++], g[j]);
+    }
 
     sig_digit *= 2; // Move to the next significant digit in the binary number
     ig = il = 0;    // Reset recipient array counters to 0
   }
 
+  for (i = 0; i < size; i++)
+  {
+    free(l[i]);
+    free(g[i]);
+  }
   free(l);
   free(g);
 
