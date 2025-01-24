@@ -285,6 +285,7 @@ int radix_sort(char **strs, int size)
     }
   }
 
+  // Free all memory allocated in this function
   for (i = 0; i < ASCII_SIZE; i++)
   {
     free(buckets[i]);
