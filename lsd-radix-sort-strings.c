@@ -8,6 +8,26 @@
  *   line after it; no more, no less.
  */
 
+/*
+Test case (copy to a file, including the last empty line):
+azure
+ashen
+brown
+crowd
+apple
+clean
+burnt
+blast
+cream
+chase
+light
+arise
+alien
+alert
+alter
+
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -190,7 +210,7 @@ int radix_sort(char **strs, int size)
       j,                      // Iterator for the buckets
       k;                      // Iterator for the characters in the words
 
-  for (i = 0; i < ASCII_SIZE; i++)
+  for (i = 0; i < ASCII_SIZE; i++) // Allocate memory for each bucket
   {
     buckets[i] = (char **)malloc(sizeof(char *) * size);
     if (buckets[i] == NULL)
@@ -202,7 +222,7 @@ int radix_sort(char **strs, int size)
       }
       return 1;
     }
-    for (j = 0; j < size; j++)
+    for (j = 0; j < size; j++) // Allocate memory for the strings inside the buckets
     {
       buckets[i][j] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
       if (buckets[i][j] == NULL)
