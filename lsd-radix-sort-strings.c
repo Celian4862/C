@@ -1,12 +1,4 @@
 /**
- * Return codes:
- * 0: Success
- * 1: Not enough arguments
- * 2: Too many arguments
- * 3: Error opening file
- * 4: Memory allocation failed
- * 5: File format error
- *
  * Note: when using this programme, please ensure
  * the following:
  * - The file contains words separated by newlines.
@@ -23,6 +15,15 @@
 
 int radix_sort(char **, int);
 
+/**
+ * Return codes:
+ * 0: Success
+ * 1: Not enough arguments
+ * 2: Too many arguments
+ * 3: Error opening file
+ * 4: Memory allocation failed
+ * 5: File format error
+ */
 int main(int argc, char **argv)
 {
   if (argc == 1) // Failsafe case if there aren't enough arguments
@@ -172,6 +173,10 @@ int main(int argc, char **argv)
   return 0;
 }
 
+/**
+ * Sorts an array of strings using the radix sort algorithm.
+ * Returns 0 if successful, 1 if memory allocation fails.
+ */
 int radix_sort(char **strs, int size)
 {
   char **ones = (char **)malloc(sizeof(char *) * size),  // Array of greater strings
