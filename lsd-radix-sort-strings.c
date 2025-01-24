@@ -34,6 +34,7 @@ alter
 #include <ctype.h>
 #define ASCII_SIZE 128
 
+int resize_strs(char **, int);
 int radix_sort(char **, int);
 
 /**
@@ -157,36 +158,17 @@ int main(int argc, char **argv)
   }
 
   // Find the size of the longest word
-  for (i = 0; i < word_count; i++)
+  if (resize_strs(strs, word_count))
   {
-    if (strlen(strs[i]) > character_count) // No need to reinitialise character_count because it was set to 0 in the previous loop
+    printf("Memory allocation failed.\n");
+    // Free all dynamically allocated memory
+    free(buffer);
+    for (i = 0; i < word_count; i++)
     {
-      character_count = strlen(strs[i]);
+      free(strs[i]);
     }
-  }
-
-  // Resize all of strs to the size of the longest word
-  for (i = 0; i < word_count; i++)
-  {
-    strs[i] = (char *)realloc(strs[i], sizeof(char) * (character_count + 1));
-    if (strs[i] == NULL)
-    {
-      printf("Memory allocation failed.\n");
-      // Free previously allocated memory
-      for (int j = 0; j < word_count; j++)
-      {
-        free(strs[j]);
-      }
-      free(strs);
-      free(buffer);
-      return 4;
-    }
-
-    // Pad each string with null characters
-    for (j = strlen(strs[i]); j < character_count; j++)
-    {
-      strs[i][j] = '\0';
-    }
+    free(strs);
+    return 4;
   }
 
   printf("\nInitial list of words:\n");
@@ -224,6 +206,40 @@ int main(int argc, char **argv)
   }
   free(strs);
 
+  return 0;
+}
+
+/**
+ * Resizes an array of strings to a new size.
+ */
+int resize_strs(char **strs, int size)
+{
+  int i, j,                // Iterators for the loops
+      character_count = 0; // Variable to store the number of characters in a word
+
+  for (i = 0; i < size; i++)
+  {
+    if (strlen(strs[i]) > character_count)
+    {
+      character_count = strlen(strs[i]);
+    }
+  }
+
+  // Resize all of strs to the size of the longest word
+  for (i = 0; i < size; i++)
+  {
+    strs[i] = (char *)realloc(strs[i], sizeof(char) * (character_count + 1));
+    if (strs[i] == NULL)
+    {
+      return 1;
+    }
+
+    // Pad each string with null characters
+    for (j = strlen(strs[i]); j < character_count; j++)
+    {
+      strs[i][j] = '\0';
+    }
+  }
   return 0;
 }
 
