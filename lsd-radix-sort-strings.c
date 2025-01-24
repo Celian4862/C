@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#define ASCII_SIZE 128
 
 int radix_sort(char **, int);
 
@@ -72,6 +73,11 @@ int main(int argc, char **argv)
 
   // Count the number of words in the file.
   // This does not help optimise performance, but it optimises storage.
+
+  /**
+   * Need to also find longest string
+   */
+
   for (i = 0; i < file_size; i++)
   {
     if (buffer[i] == '\n')
@@ -179,79 +185,46 @@ int main(int argc, char **argv)
  */
 int radix_sort(char **strs, int size)
 {
-  char **ones = (char **)malloc(sizeof(char *) * size),  // Array of greater strings
-      **zeroes = (char **)malloc(sizeof(char *) * size); // Array of lesser strings
+  char **buckets[ASCII_SIZE]; // Array of buckets to store the words
+  int i,                      // Iterator for the words
+      j,                      // Iterator for the buckets
+      k;                      // Iterator for the characters in the words
 
-  if (ones == NULL || zeroes == NULL)
+  for (i = 0; i < ASCII_SIZE; i++)
   {
-    // Free previously allocated memory
-    free(ones);
-    free(zeroes);
-    return 1; // Return value is 1 because it is used as a boolean, not a code
-  }
-
-  int a,             // Iterator for each character in the character arrays
-      i,             // strs iterator
-      j,             // Repetitions counter
-      k,             // Iterator for returning data to the original array
-      l,             // Iterator for nullifying strings arrays zeroes and ones
-      ig = 0,        // Counter for array ones
-      il = 0,        // counter for array zeroes
-      sig_digit = 1, // Current focused significant digit
-      character_count = 6;
-
-  for (i = 0; i < size; i++)
-  {
-    ones[i] = (char *)calloc(character_count, sizeof(char));
-    zeroes[i] = (char *)calloc(character_count, sizeof(char));
-  }
-
-  for (a = character_count - 2; a >= 0; a--)
-  {
-    for (i = 0; i < 7; i++)
+    buckets[i] = (char **)malloc(sizeof(char *) * size);
+    if (buckets[i] == NULL)
     {
-      for (j = 0; j < size; j++)
+      // Free previously allocated memory
+      for (j = 0; j < i; j++)
       {
-        if ((strs[j][a] & sig_digit) == 0)
+        free(buckets[j]);
+      }
+      return 1;
+    }
+    for (j = 0; j < size; j++)
+    {
+      buckets[i][j] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
+      if (buckets[i][j] == NULL)
+      {
+        // Free previously allocated memory
+        for (k = 0; k < i; k++)
         {
-          strcpy(zeroes[il++], strs[j]);
+          for (j = 0; j < size; j++)
+          {
+            free(buckets[k][j]);
+          }
+          free(buckets[k]);
         }
-        else
-        {
-          strcpy(ones[ig++], strs[j]);
-        }
-      }
-
-      // Place all strings back into the original array
-      for (j = 0; j < il; j++)
-      {
-        strs[j] = (char *)realloc(strs[j], sizeof(char) * (strlen(zeroes[j]) + 1));
-        strcpy(strs[j], zeroes[j]);
-      }
-      k = j;
-      for (j = 0; j < ig; j++)
-      {
-        strs[k] = (char *)realloc(strs[k], sizeof(char) * (strlen(ones[j]) + 1));
-        strcpy(strs[k++], ones[j]);
-      }
-
-      sig_digit *= 2; // Move to the next significant digit in the binary number
-      ig = il = 0;    // Reset recipient array counters to 0
-
-      for (l = 0; l < character_count; l++)
-      {
-        ones[i][l] = zeroes[i][l] = '\0';
+        return 1;
       }
     }
   }
 
-  for (i = 0; i < size; i++)
+  for (i = 0; i < ASCII_SIZE; i++)
   {
-    free(zeroes[i]);
-    free(ones[i]);
+    free(buckets[i]);
   }
-  free(zeroes);
-  free(ones);
 
   return 0;
 }
