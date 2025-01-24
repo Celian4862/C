@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   }
 
   long file_size,          // Variable to store the file size
-      i;                   // Loop variable
+      i, j;                // Loop variables
   int character_count = 0, // Variable to store the number of characters in a word
       word_count = 0,      // Store the number of words to allocate space
       word_i = 0;          // Iterator for the array of words
@@ -93,11 +93,6 @@ int main(int argc, char **argv)
 
   // Count the number of words in the file.
   // This does not help optimise performance, but it optimises storage.
-
-  /**
-   * Need to also find longest string
-   */
-
   for (i = 0; i < file_size; i++)
   {
     if (buffer[i] == '\n')
@@ -158,6 +153,39 @@ int main(int argc, char **argv)
     else if (buffer[i] != '\n')
     {
       character_count++;
+    }
+  }
+
+  // Find the size of the longest word
+  for (i = 0; i < word_count; i++)
+  {
+    if (strlen(strs[i]) > character_count) // No need to reinitialise character_count because it was set to 0 in the previous loop
+    {
+      character_count = strlen(strs[i]);
+    }
+  }
+
+  // Resize all of strs to the size of the longest word
+  for (i = 0; i < word_count; i++)
+  {
+    strs[i] = (char *)realloc(strs[i], sizeof(char) * (character_count + 1));
+    if (strs[i] == NULL)
+    {
+      printf("Memory allocation failed.\n");
+      // Free previously allocated memory
+      for (int j = 0; j < word_count; j++)
+      {
+        free(strs[j]);
+      }
+      free(strs);
+      free(buffer);
+      return 4;
+    }
+
+    // Pad each string with null characters
+    for (j = strlen(strs[i]); j < character_count; j++)
+    {
+      strs[i][j] = '\0';
     }
   }
 
