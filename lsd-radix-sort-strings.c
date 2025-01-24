@@ -174,99 +174,79 @@ int main(int argc, char **argv)
 
 int radix_sort(char **strs, int size)
 {
-  char **g = (char **)malloc(sizeof(char *) * size), // Array of greater strings
-      **l = (char **)malloc(sizeof(char *) * size);  // Array of lesser strings
+  char **ones = (char **)malloc(sizeof(char *) * size),  // Array of greater strings
+      **zeroes = (char **)malloc(sizeof(char *) * size); // Array of lesser strings
 
-  if (g == NULL || l == NULL)
+  if (ones == NULL || zeroes == NULL)
   {
     // Free previously allocated memory
-    free(g);
-    free(l);
+    free(ones);
+    free(zeroes);
     return 1; // Return value is 1 because it is used as a boolean, not a code
   }
 
-  int i,             // strs iterator
+  int a,             // Iterator for each character in the character arrays
+      i,             // strs iterator
       j,             // Repetitions counter
       k,             // Iterator for returning data to the original array
-      ig = 0,        // Counter for array g
-      il = 0,        // counter for array l
-      sig_digit = 1; // Current focused significant digit
+      l,             // Iterator for nullifying strings arrays zeroes and ones
+      ig = 0,        // Counter for array ones
+      il = 0,        // counter for array zeroes
+      sig_digit = 1, // Current focused significant digit
+      character_count = 6;
 
   for (i = 0; i < size; i++)
   {
-    g[i] = l[i] = NULL;
+    ones[i] = (char *)calloc(character_count, sizeof(char));
+    zeroes[i] = (char *)calloc(character_count, sizeof(char));
   }
 
-  for (i = 0; i < 7; i++)
+  for (a = character_count - 2; a >= 0; a--)
   {
-    for (j = 0; j < size; j++)
+    for (i = 0; i < 7; i++)
     {
-      if ((strs[j][0] & sig_digit) == 0)
+      for (j = 0; j < size; j++)
       {
-        l[il] = (char *)realloc(l[il], sizeof(char) * (strlen(strs[j]) + 1));
-        if (l[il] == NULL)
+        if ((strs[j][a] & sig_digit) == 0)
         {
-          // Free previously allocated memory
-          for (int m = 0; m < il; m++)
-          {
-            free(l[m]);
-          }
-          for (int m = 0; m < ig; m++)
-          {
-            free(g[m]);
-          }
-          free(l);
-          free(g);
-          return 1; // Return value is 1 because it is used as a boolean, not a code
+          strcpy(zeroes[il++], strs[j]);
         }
-        strcpy(l[il++], strs[j]);
+        else
+        {
+          strcpy(ones[ig++], strs[j]);
+        }
       }
-      else
+
+      // Place all strings back into the original array
+      for (j = 0; j < il; j++)
       {
-        g[ig] = (char *)realloc(g[ig], sizeof(char) * (strlen(strs[j]) + 1));
-        if (g[ig] == NULL)
-        {
-          // Free previously allocated memory
-          for (int m = 0; m < il; m++)
-          {
-            free(l[m]);
-          }
-          for (int m = 0; m < ig; m++)
-          {
-            free(g[m]);
-          }
-          free(l);
-          free(g);
-          return 1; // Return value is 1 because it is used as a boolean, not a code
-        }
-        strcpy(g[ig++], strs[j]);
+        strs[j] = (char *)realloc(strs[j], sizeof(char) * (strlen(zeroes[j]) + 1));
+        strcpy(strs[j], zeroes[j]);
+      }
+      k = j;
+      for (j = 0; j < ig; j++)
+      {
+        strs[k] = (char *)realloc(strs[k], sizeof(char) * (strlen(ones[j]) + 1));
+        strcpy(strs[k++], ones[j]);
+      }
+
+      sig_digit *= 2; // Move to the next significant digit in the binary number
+      ig = il = 0;    // Reset recipient array counters to 0
+
+      for (l = 0; l < character_count; l++)
+      {
+        ones[i][l] = zeroes[i][l] = '\0';
       }
     }
-
-    // Place all strings back into the original array
-    for (j = 0; j < il; j++)
-    {
-      strs[j] = (char *)realloc(strs[j], sizeof(char) * (strlen(l[j]) + 1));
-      strcpy(strs[j], l[j]);
-    }
-    k = j;
-    for (j = 0; j < ig; j++)
-    {
-      strs[k] = (char *)realloc(strs[k], sizeof(char) * (strlen(g[j]) + 1));
-      strcpy(strs[k++], g[j]);
-    }
-
-    sig_digit *= 2; // Move to the next significant digit in the binary number
-    ig = il = 0;    // Reset recipient array counters to 0
   }
 
   for (i = 0; i < size; i++)
   {
-    free(l[i]);
-    free(g[i]);
+    free(zeroes[i]);
+    free(ones[i]);
   }
-  free(l);
-  free(g);
+  free(zeroes);
+  free(ones);
 
   return 0;
 }
