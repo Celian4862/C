@@ -33,9 +33,12 @@ alter
 #include <string.h>
 #include <ctype.h>
 #define ASCII_SIZE 128
+#define ASCII_ZERO 48
+#define ASCII_L_ZED 122
 
-int resize_strs(char **, int);
 int radix_sort(char **, int);
+int resize_strs(char **, int);
+int bucket_allocation(char ***, int, int, int, int);
 
 /**
  * Return codes:
@@ -157,12 +160,13 @@ int main(int argc, char **argv)
     }
   }
 
+  free(buffer);
+
   // Find the size of the longest word
   if (resize_strs(strs, word_count))
   {
     printf("Memory allocation failed.\n");
     // Free all dynamically allocated memory
-    free(buffer);
     for (i = 0; i < word_count; i++)
     {
       free(strs[i]);
@@ -182,7 +186,6 @@ int main(int argc, char **argv)
   {
     printf("Memory allocation failed.\n");
     // Free all dynamically allocated memory
-    free(buffer);
     for (i = 0; i < word_count; i++)
     {
       free(strs[i]);
@@ -199,12 +202,72 @@ int main(int argc, char **argv)
   printf("\n");
 
   // Free all dynamically allocated memory
-  free(buffer);
   for (i = 0; i < word_count; i++)
   {
     free(strs[i]);
   }
   free(strs);
+
+  return 0;
+}
+
+/**
+ * Sorts an array of strings using the radix sort algorithm.
+ * Returns 0 if successful, 1 if memory allocation fails.
+ */
+int radix_sort(char **strs, int word_count)
+{
+  char **buckets[ASCII_SIZE]; // Array of buckets to store the words
+  int i, j, k,                // Iterators
+      character_count = strlen(strs[0]);
+
+  if (bucket_allocation(buckets, word_count, character_count, 48, 57) || bucket_allocation(buckets, word_count, character_count, 65, 90) || bucket_allocation(buckets, word_count, character_count, 97, 122))
+  {
+    for (j = ASCII_ZERO; j <= ASCII_L_ZED; j++)
+    {
+      for (k = 0; k < word_count; k++)
+      {
+        free(buckets[j][k]);
+      }
+      free(buckets[j]);
+    }
+    return 1;
+  }
+
+  for (i = 0; i < word_count; i++)
+  {
+    // Note: maybe use the first index to count the furthest position in each bucket
+  }
+
+  // Free all memory allocated in this function
+  for (i = ASCII_ZERO; i <= ASCII_L_ZED; i++)
+  {
+    free(buckets[i]);
+  }
+
+  return 0;
+}
+
+int bucket_allocation(char ***buckets, int word_count, int character_count, int start, int end)
+{
+  int i, j, k;
+  // Allocate memory for buckets
+  for (i = start; i <= end; i++)
+  {
+    buckets[i] = (char **)malloc(sizeof(char *) * word_count);
+    if (buckets[i] == NULL)
+    {
+      return 1;
+    }
+    for (j = 0; j < word_count; j++) // Allocate memory for the strings inside the buckets
+    {
+      buckets[i][j] = (char *)calloc(character_count + 1, sizeof(char));
+      if (buckets[i][j] == NULL)
+      {
+        return 1;
+      }
+    }
+  }
 
   return 0;
 }
@@ -240,56 +303,5 @@ int resize_strs(char **strs, int size)
       strs[i][j] = '\0';
     }
   }
-  return 0;
-}
-
-/**
- * Sorts an array of strings using the radix sort algorithm.
- * Returns 0 if successful, 1 if memory allocation fails.
- */
-int radix_sort(char **strs, int size)
-{
-  char **buckets[ASCII_SIZE]; // Array of buckets to store the words
-  int i,                      // Iterator for the words
-      j,                      // Iterator for the buckets
-      k;                      // Iterator for the characters in the words
-
-  for (i = 0; i < ASCII_SIZE; i++) // Allocate memory for each bucket
-  {
-    buckets[i] = (char **)malloc(sizeof(char *) * size);
-    if (buckets[i] == NULL)
-    {
-      // Free previously allocated memory
-      for (j = 0; j < i; j++)
-      {
-        free(buckets[j]);
-      }
-      return 1;
-    }
-    for (j = 0; j < size; j++) // Allocate memory for the strings inside the buckets
-    {
-      buckets[i][j] = (char *)malloc(sizeof(char) * (strlen(strs[j]) + 1));
-      if (buckets[i][j] == NULL)
-      {
-        // Free previously allocated memory
-        for (k = 0; k < i; k++)
-        {
-          for (j = 0; j < size; j++)
-          {
-            free(buckets[k][j]);
-          }
-          free(buckets[k]);
-        }
-        return 1;
-      }
-    }
-  }
-
-  // Free all memory allocated in this function
-  for (i = 0; i < ASCII_SIZE; i++)
-  {
-    free(buckets[i]);
-  }
-
   return 0;
 }
