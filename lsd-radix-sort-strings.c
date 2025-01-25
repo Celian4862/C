@@ -7,34 +7,18 @@
  * - The last word in the file has only one empty
  *   line after it; no more, no less.
  */
-
-/*
-Test case (copy to a file, including the last empty line):
-azure
-ashen
-brown
-crowd
-apple
-clean
-burnt
-blast
-cream
-chase
-light
-arise
-alien
-alert
-alter
-
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #define ASCII_SIZE 128
+#define ASCII_NULL 0
 #define ASCII_ZERO 48
-#define ASCII_L_ZED 122
+#define ASCII_NINE 57
+#define ASCII_U_A 65
+#define ASCII_U_Z 90
+#define ASCII_L_A 97
+#define ASCII_L_Z 122
 
 int radix_sort(char **, int);
 int resize_strs(char **, int);
@@ -217,31 +201,144 @@ int main(int argc, char **argv)
  */
 int radix_sort(char **strs, int word_count)
 {
-  char **buckets[ASCII_SIZE]; // Array of buckets to store the words
-  int i, j, k,                // Iterators
-      character_count = strlen(strs[0]);
+  char **buckets[ASCII_SIZE] = {NULL}; // Initialize buckets to NULL
+  int i, j, k, l,                      // Iterators
+      character_count = strlen(strs[0]),
+      bucket_i[ASCII_SIZE] = {0}; // Array to store the index of the last word in each bucket
 
-  if (bucket_allocation(buckets, word_count, character_count, 48, 57) || bucket_allocation(buckets, word_count, character_count, 65, 90) || bucket_allocation(buckets, word_count, character_count, 97, 122))
+  // The function bucket_allocation returns 0 if successful.
+  if (bucket_allocation(buckets, word_count, character_count, ASCII_NULL, ASCII_NULL)    // For the null bucket
+      || bucket_allocation(buckets, word_count, character_count, ASCII_ZERO, ASCII_NINE) // For numbers
+      || bucket_allocation(buckets, word_count, character_count, ASCII_U_A, ASCII_U_Z)   // For uppercase letters
+      || bucket_allocation(buckets, word_count, character_count, ASCII_L_A, ASCII_L_Z)   // For lowercase letters
+  )
   {
-    for (j = ASCII_ZERO; j <= ASCII_L_ZED; j++)
+    for (j = ASCII_ZERO; j <= ASCII_L_Z; j++)
+    {
+      if (buckets[j] != NULL)
+      {
+        for (k = 0; k < word_count; k++)
+        {
+          free(buckets[j][k]);
+        }
+        free(buckets[j]);
+      }
+    }
+    if (buckets[ASCII_NULL] != NULL)
     {
       for (k = 0; k < word_count; k++)
       {
-        free(buckets[j][k]);
+        free(buckets[ASCII_NULL][k]);
       }
-      free(buckets[j]);
+      free(buckets[ASCII_NULL]);
     }
-    return 1;
+    return 1; // Memory allocation failed, return 1 to indicate failure
   }
 
-  for (i = 0; i < word_count; i++)
+  // Begin LSD radix sort
+  for (j = character_count - 1; j >= 0; j--)
   {
-    // Note: maybe use the first index to count the furthest position in each bucket
+    // Place each word in the appropriate bucket
+    for (i = 0; i < word_count; i++)
+    {
+      strcpy(buckets[strs[i][j]][(bucket_i[strs[i][j]])++], strs[i]);
+    }
+
+    // Copy the words back into the original array
+
+    l = 0; // l to iterate through the original array
+
+    for (i = 0; i < bucket_i[ASCII_NULL]; i++) // For the null bucket
+    {
+      strcpy(strs[l++], buckets[ASCII_NULL][i]);
+    }
+
+    for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
+    {
+      for (k = 0; k < bucket_i[i]; k++)
+      {
+        strcpy(strs[l++], buckets[i][k]);
+      }
+    }
+    for (i = ASCII_U_A; i <= ASCII_U_Z; i++) // Uppercase letters
+    {
+      for (k = 0; k < bucket_i[i]; k++)
+      {
+        strcpy(strs[l++], buckets[i][k]);
+      }
+    }
+    for (i = ASCII_L_A; i <= ASCII_L_Z; i++) // Lowercase letters
+    {
+      for (k = 0; k < bucket_i[i]; k++)
+      {
+        strcpy(strs[l++], buckets[i][k]);
+      }
+    }
+
+    // Reset the bucket index
+    for (i = ASCII_ZERO; i <= ASCII_L_Z; i++)
+    {
+      bucket_i[i] = 0;
+    }
+    bucket_i[0] = 0; // For the null bucket
+
+    // Reset the strings in the buckets to null
+    for (i = 0; i < word_count; i++)
+    {
+      memset(buckets[ASCII_NULL][i], ASCII_NULL, sizeof(char) * character_count);
+    }
+    for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
+    {
+      for (k = 0; k < word_count; k++)
+      {
+        memset(buckets[i][k], ASCII_NULL, sizeof(char) * character_count);
+      }
+    }
+    for (i = ASCII_U_A; i <= ASCII_U_Z; i++)
+    {
+      for (k = 0; k < word_count; k++)
+      {
+        memset(buckets[i][k], ASCII_NULL, sizeof(char) * character_count);
+      }
+    }
+    for (i = ASCII_L_A; i <= ASCII_L_Z; i++)
+    {
+      for (k = 0; k < word_count; k++)
+      {
+        memset(buckets[i][k], ASCII_NULL, sizeof(char) * character_count);
+      }
+    }
   }
 
   // Free all memory allocated in this function
-  for (i = ASCII_ZERO; i <= ASCII_L_ZED; i++)
+  for (i = 0; i < word_count; i++)
   {
+    free(buckets[ASCII_NULL][i]);
+  }
+  free(buckets[ASCII_NULL]);
+
+  for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
+  {
+    for (j = 0; j < word_count; j++)
+    {
+      free(buckets[i][j]);
+    }
+    free(buckets[i]);
+  }
+  for (i = ASCII_U_A; i <= ASCII_U_Z; i++)
+  {
+    for (j = 0; j < word_count; j++)
+    {
+      free(buckets[i][j]);
+    }
+    free(buckets[i]);
+  }
+  for (i = ASCII_L_A; i <= ASCII_L_Z; i++)
+  {
+    for (j = 0; j < word_count; j++)
+    {
+      free(buckets[i][j]);
+    }
     free(buckets[i]);
   }
 
