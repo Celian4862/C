@@ -108,7 +108,6 @@ int radix_sort(int *arr, int size)
   }
 
   // Free the memory allocated for the arrays
-  free(arr);
   free(g);
   free(l);
 
