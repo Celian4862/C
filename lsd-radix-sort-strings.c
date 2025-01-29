@@ -212,6 +212,11 @@ int main(int argc, char **argv)
  */
 int radix_sort(char **strs, int word_count)
 {
+  clock_t start, end;
+  double cpu_time_used;
+
+  start = clock();
+
   char **buckets[ASCII_SIZE] = {NULL}; // Initialize buckets to NULL
   int i, j, k, l,                      // Iterators
       character_count = strlen(strs[0]),
@@ -328,22 +333,23 @@ int radix_sort(char **strs, int word_count)
   }
   free(buckets[ASCII_NULL]);
 
-  for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
-  {
-    for (j = 0; j < word_count; j++)
-    {
-      free(buckets[i][j]);
-    }
-    free(buckets[i]);
-  }
-  for (i = ASCII_U_A; i <= ASCII_U_Z; i++)
-  {
-    for (j = 0; j < word_count; j++)
-    {
-      free(buckets[i][j]);
-    }
-    free(buckets[i]);
-  }
+  // Commented out for now because it always throws an error
+  // for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
+  // {
+  //   for (j = 0; j < word_count; j++)
+  //   {
+  //     free(buckets[i][j]);
+  //   }
+  //   free(buckets[i]);
+  // }
+  // for (i = ASCII_U_A; i <= ASCII_U_Z; i++)
+  // {
+  //   for (j = 0; j < word_count; j++)
+  //   {
+  //     free(buckets[i][j]);
+  //   }
+  //   free(buckets[i]);
+  // }
   for (i = ASCII_L_A; i <= ASCII_L_Z; i++)
   {
     for (j = 0; j < word_count; j++)
@@ -352,6 +358,11 @@ int radix_sort(char **strs, int word_count)
     }
     free(buckets[i]);
   }
+
+  end = clock();
+  cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+  printf("\nTime taken: %lf seconds\n", cpu_time_used);
 
   return 0;
 }
