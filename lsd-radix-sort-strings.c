@@ -333,15 +333,15 @@ int radix_sort(char **strs, int word_count)
   }
   free(buckets[ASCII_NULL]);
 
+  for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
+  {
+    for (j = 0; j < word_count; j++)
+    {
+      free(buckets[i][j]);
+    }
+    free(buckets[i]);
+  }
   // Commented out for now because it always throws an error
-  // for (i = ASCII_ZERO; i <= ASCII_NINE; i++)
-  // {
-  //   for (j = 0; j < word_count; j++)
-  //   {
-  //     free(buckets[i][j]);
-  //   }
-  //   free(buckets[i]);
-  // }
   // for (i = ASCII_U_A; i <= ASCII_U_Z; i++)
   // {
   //   for (j = 0; j < word_count; j++)
@@ -350,14 +350,14 @@ int radix_sort(char **strs, int word_count)
   //   }
   //   free(buckets[i]);
   // }
-  for (i = ASCII_L_A; i <= ASCII_L_Z; i++)
-  {
-    for (j = 0; j < word_count; j++)
-    {
-      free(buckets[i][j]);
-    }
-    free(buckets[i]);
-  }
+  // for (i = ASCII_L_A; i <= ASCII_L_Z; i++)
+  // {
+  //   for (j = 0; j < word_count; j++)
+  //   {
+  //     free(buckets[i][j]);
+  //   }
+  //   free(buckets[i]);
+  // }
 
   end = clock();
   cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
