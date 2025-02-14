@@ -3,7 +3,8 @@
 #include <string.h> // Include the string library for memcpy
 
 int _atoi(char *);
-int radix_sort(int *, int);
+void radix_sort(int *, const int);
+void counting_sort(int *, const int, const int);
 
 int main(int argc, char **argv)
 {
@@ -22,11 +23,7 @@ int main(int argc, char **argv)
     arr[j] = _atoi(argv[i]); // Convert from string to integer
   }
 
-  if (!radix_sort(arr, size))
-  {
-    printf("Memory allocation failed.\n");
-    return 2;
-  }
+  radix_sort(arr, size);
 
   printf("\nResult: ");
   for (i = 0; i < size; i++) // Display sorted array
@@ -57,59 +54,45 @@ int _atoi(char *arr)
   return res;
 }
 
-int radix_sort(int *arr, int size)
+void radix_sort(int *arr, const int size)
 {
-  int *g = (int *)malloc(sizeof(int) * size), // Array to store the digits with 1 at the significant digit
-      *l = (int *)malloc(sizeof(int) * size), // Array to store the digits with 0 at the significant digit
-      i,                                      // arr iterator
-      j,                                      // Repetitions counter
-      ig = 0,                                 // Counter for array g
-      il = 0,                                 // counter for array l
-      largest = arr[0],                       // Store the largest number in the array
-      power_largest = 0,                      // Counter for the repetition loop
-      sig_digit = 1;                          // Determines the current focused significant digit in the binary number
+  int max = arr[0], i, divisor = 1;
 
-  if (NULL == g || NULL == l)
+  for (i = 0; i < size; i++)
   {
-    printf("Memory allocation failed.\n");
-    return 0;
-  }
-
-  for (i = 1; i < size; i++) // Find the largest number
-  {
-    if (largest < arr[i])
-      largest = arr[i];
-  }
-
-  while (largest > 0) // Find power_largest
-  {
-    largest /= 2;
-    power_largest++;
-  }
-
-  for (i = 0; i < power_largest; i++) // Repetition loop
-  {
-    for (j = 0; j < size; j++) // Sorting loop
+    if (max < arr[i])
     {
-      if ((arr[j] & sig_digit) == 0)
-      {
-        l[il++] = arr[j];
-      }
-      else
-      {
-        g[ig++] = arr[j];
-      }
+      max = arr[i];
     }
-    memcpy(arr, l, il * 4);      // Copy array of significant digit 0's to the main array
-    memcpy(arr + il, g, ig * 4); // Copy array of significant digit 1's to the main array after the significant digit 0's
-
-    sig_digit *= 2; // Move to the next significant digit in the binary number
-    ig = il = 0;    // Reset recipient array counters to 0
   }
 
-  // Free the memory allocated for the arrays
-  free(g);
-  free(l);
+  max *= 10;
+  while ((max /= 10) != 0)
+  {
+    counting_sort(arr, size, divisor);
+    divisor *= 10;
+  }
+}
 
-  return 1;
+void counting_sort(int *arr, const int size, const int divisor)
+{
+  int countArr[10] = {0}, outputArr[size], i;
+
+  for (i = 0; i < size; i++)
+  {
+    countArr[(arr[i] / divisor) % 10]++;
+  }
+
+  // Get cumulative / prefix sum
+  for (i = 1; i < 10; i++)
+  {
+    countArr[i] += countArr[i - 1];
+  }
+
+  for (i = size - 1; i >= 0; i--)
+  {
+    outputArr[--countArr[(arr[i] / divisor) % 10]] = arr[i];
+  }
+
+  memcpy(arr, outputArr, size * sizeof(int));
 }
