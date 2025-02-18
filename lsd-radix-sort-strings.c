@@ -27,14 +27,7 @@ int main(int argc, char **argv)
 // MSD radix sort because we're dealing with arrays
 void radix_sort(char **words, const int word_size)
 {
-  int max_length = strlen(words[0]);
-  for (int i = 1; i < word_size; i++)
-  {
-    if (max_length < strlen(words[i]))
-    {
-      max_length = strlen(words[i]);
-    }
-  }
+  counting_sort(words, word_size, 0);
 }
 
 void counting_sort(char **words, const int word_size, const int letter)
@@ -47,7 +40,7 @@ void counting_sort(char **words, const int word_size, const int letter)
     countArr[words[word][letter]]++;
   }
 
-  for (word = 0; word < MAX; word++)
+  for (word = 1; word < MAX; word++)
   {
     countArr[word] += countArr[word - 1];
   }
@@ -57,5 +50,5 @@ void counting_sort(char **words, const int word_size, const int letter)
     outputArr[--countArr[words[word][letter]]] = words[word];
   }
 
-  memcpy(words, outputArr, word_size * sizeof(char));
+  memcpy(words, outputArr, word_size * sizeof(char *));
 }
