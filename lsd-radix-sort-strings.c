@@ -4,6 +4,7 @@
 #define MAX 128
 
 void radix_sort(char **, const int);
+void msd_(char **, const int, const int);
 void counting_sort(char **, const int, const int);
 
 int main(int argc, char **argv)
@@ -27,7 +28,29 @@ int main(int argc, char **argv)
 // MSD radix sort because we're dealing with arrays
 void radix_sort(char **words, const int word_size)
 {
-  counting_sort(words, word_size, 0);
+  msd_(words, word_size, 0);
+}
+
+void msd_(char **words, const int word_size, const int letter)
+{
+  // 1. Base case
+  if (word_size <= 1)
+  {
+    return;
+  }
+  // 2. Counting sort
+  counting_sort(words, word_size, letter);
+  // 3. Recursion
+  int start = 0;
+  for (int i = 1; i < word_size; i++)
+  {
+    if (words[i][letter] != words[i - 1][letter])
+    {
+      msd_(words + start, i - start, letter + 1);
+      start = i;
+    }
+  }
+  msd_(words + start, word_size - start, letter + 1);
 }
 
 void counting_sort(char **words, const int word_size, const int letter)
