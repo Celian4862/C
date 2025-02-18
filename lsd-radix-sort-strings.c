@@ -15,8 +15,16 @@ int main(int argc, char **argv)
     return 1;
   }
   char **words = argv + 1;
+
+  printf("Input:\n");
+  for (int i = 0; i < argc - 1; i++)
+  {
+    printf("%s ", words[i]);
+  }
+
   radix_sort(words, argc - 1);
-  printf("Result:\n");
+
+  printf("\n\nResult:\n");
   for (int i = 0; i < argc - 1; i++)
   {
     printf("%s ", words[i]);
@@ -60,7 +68,9 @@ void counting_sort(char **words, const int word_size, const int letter)
 
   for (word = 0; word < word_size; word++)
   {
-    countArr[words[word][letter]]++;
+    (strlen(words[word]) <= letter)
+        ? countArr[0]++
+        : countArr[words[word][letter]]++;
   }
 
   for (word = 1; word < MAX; word++)
@@ -70,7 +80,9 @@ void counting_sort(char **words, const int word_size, const int letter)
 
   for (word = word_size - 1; word >= 0; word--)
   {
-    outputArr[--countArr[words[word][letter]]] = words[word];
+    outputArr[(strlen(words[word]) <= letter)
+                  ? --countArr[0]
+                  : --countArr[words[word][letter]]] = words[word];
   }
 
   memcpy(words, outputArr, word_size * sizeof(char *));
