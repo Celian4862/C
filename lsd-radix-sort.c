@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h> // Include the string library for memcpy
 
-int _atoi(char *);
+int _atoi(char *); // Custom atoi function because the default atoi doesn't seem to work
 void radix_sort(int *, const int);
 void counting_sort(int *, const int, const int);
 
@@ -66,7 +66,7 @@ void radix_sort(int *arr, const int size)
     }
   }
 
-  max *= 10;
+  max *= 10; // To increase the number of iterations by one
   while ((max /= 10) != 0)
   {
     counting_sort(arr, size, divisor);
