@@ -91,27 +91,8 @@ void display_BT(BTPage *page)
 // Returns true if the key is successfully inserted, false otherwise
 bool insert_BT(BTPage *page, char key)
 {
-  int i;
-  if (page->key_count == 0)
-  {
-    page->key[0] = key;
-    page->key_count++;
-  }
-  else
-  {
-    for (i = 0; i < page->key_count; i++)
-    {
-      if (key < page->key[i])
-      {
-        insert_BT(page->child[i], key);
-        break;
-      }
-    }
-    if (i == page->key_count)
-    {
-      insert_BT(page->child[i], key);
-    }
-  }
+  // Implement the insert operation here
+  return false;
 }
 
 bool search_BT(BTPage *page, char key)
