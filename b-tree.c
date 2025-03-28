@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
-#define MAXKEYS 4
+#define m 7
 
 typedef struct BTPage
 {
-  short key_count;                   // number of keys in the page
-  char key[MAXKEYS];                 // the actual keys
-  struct BTPage *child[MAXKEYS + 1]; // RRNs of children
+  short key_count;         // number of keys in the page
+  char key[m - 1];         // the actual keys
+  struct BTPage *child[m]; // RRNs of children
 } BTPage;
 
 BTPage *create_BTPage();
