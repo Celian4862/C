@@ -302,11 +302,7 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
 {
   int i;
 
-  /**
-   *
-   * Copy all keys and pointers from PAGE into a working page that can hold one extra key and child.
-   *
-   */
+  // Copy all keys and pointers from PAGE into a working page that can hold one extra key and child.
   // Create a temporary page to hold the split keys and children
   BTTemp *temp = (BTTemp *)malloc(sizeof(BTTemp));
   if (temp == NULL)
@@ -329,11 +325,7 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
   }
   temp->child[i] = page->child[i]; // Copy the last child pointer to temp
 
-  /**
-   *
-   * Insert I_KEY and I_RRN into their proper places in the working page.
-   *
-   */
+  // Insert I_KEY and I_RRN into their proper places in the working page.
   for (i = temp->key_count - 1; i > 0 && temp->key[i - 1] > i_key; i--)
   {
     temp->key[i] = temp->key[i - 1];     // Shift keys to the right
@@ -342,11 +334,7 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
   temp->key[i] = i_key;       // Insert the new key in the correct position
   temp->child[i + 1] = i_rrn; // Insert the new child pointer
 
-  /**
-   *
-   * Allocate and initialise a new page in the B-tree file to hold NEWPAGE.
-   *
-   */
+  // Allocate and initialise a new page in the B-tree file to hold NEWPAGE.
   if (new_page == NULL)
   {
     printf("Memory allocation failed\n");
@@ -354,22 +342,12 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
     return false;
   }
 
-  /**
-   *
-   * Set PROMO_KEY to value of middle key, which will be promoted after the split.
-   *
-   */
+  // Set PROMO_KEY to value of middle key, which will be promoted after the split.
   *promo_key = temp->key[m / 2]; // Set the promoted key to the middle key
-  /**
-   * Set PROMO_R_CHILD to RRN of NEWPAGE.
-   */
+  // Set PROMO_R_CHILD to RRN of NEWPAGE.
   *promo_r_child = new_page; // Set the promoted child pointer
 
-  /**
-   *
-   * Copy keys and child pointers preceding PROMO_KEY from the working page to PAGE.
-   *
-   */
+  // Copy keys and child pointers preceding PROMO_KEY from the working page to PAGE.
   for (i = 0; i < m / 2; i++)
   {
     page->key[i] = temp->key[i];     // Copy the left half of keys to the original page
@@ -378,11 +356,7 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
   page->child[i] = temp->child[i]; // Copy the last child pointer to the original page
   page->key_count = m / 2;         // Update the key count of the original page
 
-  /**
-   *
-   * Copy keys and child pointers following PROMO_KEY from the working page to NEWPAGE.
-   *
-   */
+  // Copy keys and child pointers following PROMO_KEY from the working page to NEWPAGE.
   for (i = m / 2 + 1; i < m + 1; i++)
   {
     new_page->key[i - (m / 2 + 1)] = temp->key[i];     // Copy the right half of keys to the new page
