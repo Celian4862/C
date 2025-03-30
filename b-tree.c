@@ -40,7 +40,8 @@ BTPage *create_BTPage();
 bool delete_BT(BTPage *, char);
 void display_BT(BTPage *);
 void free_BT(BTPage *);
-insert_status insert_BT(BTPage *, char, BTPage **, char *);
+bool insert_BT(BTPage **, char);
+insert_status insert_BT_(BTPage *, char, BTPage **, char *);
 bool search_BT(BTPage *, char);
 // bool split(BTPage *, char, BTPage *);
 bool split(char, BTPage *, BTPage *, char *, BTPage **, BTPage *);
@@ -59,6 +60,7 @@ int main()
   printf("B-Tree Programme\n");
   while (choice != 5)
   {
+    printf("\n");
     printf("1. Search a key in B-Tree\n");
     printf("2. Insert a key in B-Tree\n");
     printf("3. Delete a key in B-Tree\n");
@@ -84,9 +86,14 @@ int main()
       }
       else
       {
-        char *promo_key = (char *)malloc(sizeof(char)); // Allocate memory for the promoted key
-        BTPage *promo_r_child = NULL;                   // Pointer to the promoted child page
-        printf("%s\n", ((insert_BT(root, key, &promo_r_child, promo_key) != ERROR) ? "Inserted key successfully." : "Failed to insert key."));
+        if (insert_BT(&root, key))
+        {
+          printf("Inserted key successfully.\n");
+        }
+        else
+        {
+          printf("Failed to insert key.\n");
+        }
       }
       break;
 
@@ -161,7 +168,7 @@ void display_BT(BTPage *root)
     printf("] "); // Print the keys in the current page
 
     // Enqueue all child pages of the current page
-    for (int i = 0; i <= current_page->key_count + 1; i++)
+    for (int i = 0; i <= current_page->key_count; i++)
     {
       if (current_page->child[i] != NULL)
       {
@@ -188,8 +195,34 @@ void free_BT(BTPage *page)
   free(page); // Free the current page after all children are freed
 }
 
+bool insert_BT(BTPage **root, char key)
+{
+  char promo_key = 0;
+  BTPage *promo_r_child = NULL; // Pointer to the promoted child page
+  if (insert_BT_(*root, key, &promo_r_child, &promo_key) != ERROR)
+  {
+    if (promo_r_child != NULL)
+    {
+      // If a new page was created, set it as the new root
+      BTPage *new_root = create_BTPage();
+      if (new_root == NULL)
+      {
+        printf("Memory allocation failed.\n");
+        return false;
+      }
+      new_root->key[0] = promo_key;       // Set the promoted key in the new root
+      new_root->child[0] = *root;         // Set the old root as the first child of the new root
+      new_root->child[1] = promo_r_child; // Set the promoted child as the second child of the new root
+      new_root->key_count = 1;            // Update the key count of the new root
+      *root = new_root;                   // Update the root pointer to point to the new root
+    }
+    return true;
+  }
+  return false;
+}
+
 // Returns true if the key is successfully inserted, false otherwise
-insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *promo_key)
+insert_status insert_BT_(BTPage *page, char key, BTPage **promo_r_child, char *promo_key)
 {
   if (page == NULL)
   {
@@ -209,8 +242,8 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
   }
 
   BTPage *p_b_rrn = NULL;
-  char *p_b_key = (char *)malloc(sizeof(char));
-  insert_status return_value = insert_BT(page->child[i], key, &p_b_rrn, p_b_key);
+  char p_b_key = 0;
+  insert_status return_value = insert_BT_(page->child[i], key, &p_b_rrn, &p_b_key);
 
   if (return_value == NO_PROMOTION || return_value == ERROR)
   {
@@ -219,12 +252,12 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
   else if (page->key_count < m - 1)
   {
     // Insert p_b_key and p_b_rrn (promoted from below) into the current page
-    for (i = page->key_count - 1; i >= 0 && page->key[i] > *p_b_key; i--)
+    for (i = page->key_count - 1; i >= 0 && page->key[i] > p_b_key; i--)
     {
       page->key[i] = page->key[i - 1];     // Shift keys to the right
       page->child[i + 1] = page->child[i]; // Shift child pointers to the right
     }
-    page->key[i + 1] = *p_b_key;  // Insert the promoted key
+    page->key[i + 1] = p_b_key;   // Insert the promoted key
     page->child[i + 2] = p_b_rrn; // Insert the promoted child pointer
     page->key_count++;            // Increment the key count
     return NO_PROMOTION;
@@ -237,10 +270,9 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
       printf("Memory allocation failed\n");
       return ERROR; // Memory allocation failed
     }
-    split(*p_b_key, p_b_rrn, page, promo_key, promo_r_child, new_page);
+    split(p_b_key, p_b_rrn, page, promo_key, promo_r_child, new_page);
     return PROMOTION;
   }
-  free(p_b_key);
 }
 
 bool search_BT(BTPage *page, char key)
