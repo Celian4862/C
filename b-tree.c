@@ -151,6 +151,11 @@ bool delete_BT(BTPage *page, char key)
 // This function uses a queue to traverse the B-Tree level by level
 void display_BT(BTPage *root)
 {
+  if (root == NULL)
+  {
+    printf("B-Tree is empty.\n");
+    return; // If the B-Tree is empty, return
+  }
   Queue q;
   q.head = q.tail = NULL; // Initialize the queue
   enqueue(&q, root);      // Enqueue the root page
@@ -380,7 +385,7 @@ QueueNode *createQueueNode(BTPage *page)
   QueueNode *new_node = (QueueNode *)malloc(sizeof(QueueNode));
   if (new_node == NULL)
   {
-    printf("Memory allocation failed\n");
+    printf("Queue memory allocation failed\n");
     return NULL;
   }
   new_node->page = page; // Assign the page to the new node
