@@ -24,6 +24,18 @@ typedef struct BTTemp
   struct BTPage *child[m + 1]; // RRNs of children
 } BTTemp;
 
+typedef struct QueueNode
+{
+  BTPage *page;
+  struct QueueNode *next;
+} QueueNode;
+
+typedef struct Queue
+{
+  QueueNode *head;
+  QueueNode *tail;
+} Queue;
+
 BTPage *create_BTPage();
 bool delete_BT(BTPage *, char);
 void display_BT(BTPage *);
@@ -33,9 +45,14 @@ bool search_BT(BTPage *, char);
 // bool split(BTPage *, char, BTPage *);
 bool split(char, BTPage *, BTPage *, char *, BTPage **, BTPage *);
 
+// Queue functions
+QueueNode *createQueueNode(BTPage *);
+void dequeue(Queue *);
+bool enqueue(Queue *, BTPage *);
+
 int main()
 {
-  short choice = 1;
+  short choice = 0;
   char key; // For inserting a new key
   BTPage *root = create_BTPage();
 
@@ -48,7 +65,7 @@ int main()
     printf("4. Display B-Tree\n");
     printf("5. Exit\n");
     printf("Enter your choice: ");
-    scanf("%d", &choice);
+    scanf(" %hd", &choice);
 
     switch (choice)
     {
@@ -61,7 +78,16 @@ int main()
     case 2:
       printf("Enter the key to be inserted: ");
       scanf(" %c", &key);
-      printf("%s\n", ((insert_BT(root, key, NULL, NULL) != ERROR) ? "Inserted key successfully." : "Failed to insert key."));
+      if (key < 'A' || key > 'Z')
+      {
+        printf("Invalid key. Please enter an uppercase letter.\n");
+      }
+      else
+      {
+        char *promo_key = (char *)malloc(sizeof(char)); // Allocate memory for the promoted key
+        BTPage *promo_r_child = NULL;                   // Pointer to the promoted child page
+        printf("%s\n", ((insert_BT(root, key, &promo_r_child, promo_key) != ERROR) ? "Inserted key successfully." : "Failed to insert key."));
+      }
       break;
 
     case 3:
@@ -114,9 +140,36 @@ bool delete_BT(BTPage *page, char key)
   return false;
 }
 
-void display_BT(BTPage *page)
+// Display the B-Tree in level order
+// This function uses a queue to traverse the B-Tree level by level
+void display_BT(BTPage *root)
 {
-  // Implement the display operation here
+  Queue q;
+  q.head = q.tail = NULL; // Initialize the queue
+  enqueue(&q, root);      // Enqueue the root page
+  while (q.head != NULL)
+  {
+    BTPage *current_page = q.head->page; // Get the current page from the queue
+    dequeue(&q);                         // Dequeue the current page
+
+    // Print the keys in the current page
+    printf("[");
+    for (int i = 0; i < current_page->key_count; i++)
+    {
+      printf("%c ", current_page->key[i]);
+    }
+    printf("] "); // Print the keys in the current page
+
+    // Enqueue all child pages of the current page
+    for (int i = 0; i <= current_page->key_count + 1; i++)
+    {
+      if (current_page->child[i] != NULL)
+      {
+        enqueue(&q, current_page->child[i]);
+      }
+    }
+  }
+  printf("\n"); // Print a newline after displaying the B-Tree
 }
 
 void free_BT(BTPage *page)
@@ -146,7 +199,7 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
   }
 
   int i;
-  for (i = 0; i < page->key_count && key < page->key[i]; i++)
+  for (i = 0; i < page->key_count && key > page->key[i]; i++)
   {
     if (page->key[i] == key)
     {
@@ -156,7 +209,7 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
   }
 
   BTPage *p_b_rrn = NULL;
-  char *p_b_key = NULL;
+  char *p_b_key = (char *)malloc(sizeof(char));
   insert_status return_value = insert_BT(page->child[i], key, &p_b_rrn, p_b_key);
 
   if (return_value == NO_PROMOTION || return_value == ERROR)
@@ -166,6 +219,14 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
   else if (page->key_count < m - 1)
   {
     // Insert p_b_key and p_b_rrn (promoted from below) into the current page
+    for (i = page->key_count - 1; i >= 0 && page->key[i] > *p_b_key; i--)
+    {
+      page->key[i] = page->key[i - 1];     // Shift keys to the right
+      page->child[i + 1] = page->child[i]; // Shift child pointers to the right
+    }
+    page->key[i + 1] = *p_b_key;  // Insert the promoted key
+    page->child[i + 2] = p_b_rrn; // Insert the promoted child pointer
+    page->key_count++;            // Increment the key count
     return NO_PROMOTION;
   }
   else
@@ -179,6 +240,7 @@ insert_status insert_BT(BTPage *page, char key, BTPage **promo_r_child, char *pr
     split(*p_b_key, p_b_rrn, page, promo_key, promo_r_child, new_page);
     return PROMOTION;
   }
+  free(p_b_key);
 }
 
 bool search_BT(BTPage *page, char key)
@@ -233,6 +295,7 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
     temp->key[i] = page->key[i];     // Copy keys to temp
     temp->child[i] = page->child[i]; // Copy child pointers to temp
   }
+  temp->child[i] = page->child[i]; // Copy the last child pointer to temp
 
   /**
    *
@@ -298,4 +361,53 @@ bool split(char i_key, BTPage *i_rrn, BTPage *page, char *promo_key, BTPage **pr
 
   free(temp);  // Free the temporary page after copying the keys and pointers
   return true; // End procedure
+}
+
+/**
+ *
+ * QUEUE FUNCTIONS
+ *
+ */
+
+QueueNode *createQueueNode(BTPage *page)
+{
+  QueueNode *new_node = (QueueNode *)malloc(sizeof(QueueNode));
+  if (new_node == NULL)
+  {
+    printf("Memory allocation failed\n");
+    return NULL;
+  }
+  new_node->page = page; // Assign the page to the new node
+  new_node->next = NULL; // Initialize the next pointer to NULL
+  return new_node;
+}
+
+void dequeue(Queue *q)
+{
+  if (q->head == NULL)
+  {
+    return; // Queue is empty, nothing to dequeue
+  }
+  QueueNode *temp = q->head; // Store the head node temporarily
+  q->head = q->head->next;   // Move the head pointer to the next node
+  free(temp);                // Free the old head node
+}
+
+bool enqueue(Queue *q, BTPage *page)
+{
+  QueueNode *new_node = createQueueNode(page); // Create a new queue node
+  if (new_node == NULL)
+  {
+    return false; // Memory allocation failed
+  }
+  if (q->head == NULL)
+  {
+    q->head = q->tail = new_node; // If the queue is empty, set the head and the tail to the new node
+  }
+  else
+  {
+    q->tail->next = new_node; // Link the new node to the end of the queue
+    q->tail = new_node;       // Update the tail pointer to the new node
+  }
+  return true;
 }
