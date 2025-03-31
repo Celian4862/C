@@ -43,7 +43,6 @@ void free_BT(BTPage *);
 bool insert_BT(BTPage **, char);
 insert_status insert_BT_(BTPage *, char, BTPage **, char *);
 bool search_BT(BTPage *, char);
-// bool split(BTPage *, char, BTPage *);
 bool split(char, BTPage *, BTPage *, char *, BTPage **, BTPage *);
 
 // Queue functions
