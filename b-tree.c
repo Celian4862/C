@@ -55,7 +55,7 @@ int main()
 {
   short choice = 0;
   char key; // For inserting a new key
-  BTPage *root = create_BTPage();
+  BTPage *root;
 
   printf("B-Tree Programme\n");
   while (choice != 5)
@@ -192,16 +192,25 @@ void free_BT(BTPage *page)
   }
   for (int i = 0; i <= page->key_count; i++)
   {
-    if (page->child[i] != NULL)
-    {
-      free_BT(page->child[i]); // Recursively free child pages
-    }
+    free_BT(page->child[i]); // Recursively free child pages
   }
   free(page); // Free the current page after all children are freed
 }
 
 bool insert_BT(BTPage **root, char key)
 {
+  if (*root == NULL)
+  {
+    *root = create_BTPage(); // Create a new root page if the tree is empty
+    if (*root == NULL)
+    {
+      printf("B-tree memory allocation failed.\n");
+      return false;
+    }
+    (*root)->key[0] = key;  // Insert the key into the root page
+    (*root)->key_count = 1; // Update the key count of the root page
+    return true;
+  }
   char promo_key = 0;
   BTPage *promo_r_child = NULL; // Pointer to the promoted child page
   if (insert_BT_(*root, key, &promo_r_child, &promo_key) != ERROR)
@@ -284,8 +293,12 @@ bool search_BT(BTPage *page, char key)
 {
   while (page != NULL)
   {
-    int i;
-    for (i = 0; i < page->key_count; i++)
+    int i, key_count = page->key_count;
+    // The key_count variable is used to save the previous page's number of keys.
+    // This helps to prevent segmentation fault especially in the
+    // if statement, which checks if the key to search for is greater
+    // than all other keys in the node, after the for loop.
+    for (i = 0; i < key_count; i++)
     {
       if (key == page->key[i])
       {
@@ -298,7 +311,10 @@ bool search_BT(BTPage *page, char key)
         break; // Exit the for loop to process the new page
       }
     }
-    page = page->child[i];
+    if (i == key_count)
+    {
+      page = page->child[i];
+    }
   }
   return false; // Key not found
 }
