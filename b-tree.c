@@ -144,6 +144,17 @@ BTPage *create_BTPage()
 bool delete_BT(BTPage *page, char key)
 {
   // Implement the delete operation here
+  // Things to note:
+  // 1. If the key is a leaf node, just delete it.
+  // 2. If it's an internal node, find the predecessor or
+  //    successor (we'll use successor in this case)
+  //    and replace the key to be deleted with it.
+  // 3. If deleting the key caused underflow:
+  // 3.1. Redistribute the keys if other siblings have more
+  //      than the minimum number of keys.
+  // 3.2. Merge with a sibling and part of the parent if it
+  //      has the minimum number of keys.
+  // 4. If the key is not found, return false.
   return false;
 }
 
