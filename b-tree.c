@@ -257,13 +257,13 @@ insert_status insert_BT_(BTPage *page, char key, BTPage **promo_r_child, char *p
   else if (page->key_count < m - 1)
   {
     // Insert p_b_key and p_b_rrn (promoted from below) into the current page
-    for (i = page->key_count - 1; i >= 0 && page->key[i] > p_b_key; i--)
+    for (i = page->key_count; i > 0 && page->key[i - 1] > p_b_key; i--)
     {
       page->key[i] = page->key[i - 1];     // Shift keys to the right
       page->child[i + 1] = page->child[i]; // Shift child pointers to the right
     }
-    page->key[i + 1] = p_b_key;   // Insert the promoted key
-    page->child[i + 2] = p_b_rrn; // Insert the promoted child pointer
+    page->key[i] = p_b_key;       // Insert the promoted key
+    page->child[i + 1] = p_b_rrn; // Insert the promoted child pointer
     page->key_count++;            // Increment the key count
     return NO_PROMOTION;
   }
