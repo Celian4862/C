@@ -5,9 +5,9 @@
 
 typedef enum insert_status
 {
-  PROMOTION,
+  ERROR,
   NO_PROMOTION,
-  ERROR
+  PROMOTION
 } insert_status;
 
 typedef struct BTPage
@@ -130,12 +130,10 @@ BTPage *create_BTPage()
   {
     int i;
     new_page->key_count = 0;
-    for (i = 0; i < m - 1; i++)
+    for (i = 0; i < m; i++)
     {
-      new_page->key[i] = '\0';   // Initialize keys to null character
       new_page->child[i] = NULL; // Initialize child pointers to NULL
     }
-    new_page->child[i] = NULL; // Initialize the last child pointer to NULL
   }
   return new_page;
 }
@@ -305,9 +303,14 @@ bool search_BT(BTPage *page, char key)
   {
     int i, key_count = page->key_count;
     // The key_count variable is used to save the previous page's number of keys.
-    // This helps to prevent segmentation fault especially in the
-    // if statement, which checks if the key to search for is greater
-    // than all other keys in the node, after the for loop.
+    // This helps to prevent segmentation fault especially in the if statement,
+    // which checks if the key to search for is greater than all other keys in
+    // the node, after the for loop.
+
+    // The segmentation fault occurs when the condition "key < page->key[i]"
+    // is true and page->child[i] is NULL. When the for loop ends, the original
+    // condition "i == page->key_count" is checked, but this results in a
+    // segmentation fault because page->child[i] (which is now page) is NULL.
     for (i = 0; i < key_count; i++)
     {
       if (key == page->key[i])
